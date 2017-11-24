@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_bendi_music"
+            android:title="本地音乐"
+           />
+        <item
+            android:id="@+id/nav_play_list"
+            android:title="播放列表"
+            />
+        <item
+            android:id="@+id/nav_me_shouzang"
+            android:title="我的收藏"
+            />
+        <item
+            android:id="@+id/nav_download_manage"
+            android:title="下载管理" />
+    </group>
+    <group android:checkableBehavior="none"
+        android:id="@+id/group_setting">
+        <item
+            android:id="@+id/nav_setting"
+            android:title="设置"
+            />
+    </group>
+    <group android:checkableBehavior="none"
+        android:id="@+id/group_exit">
+        <item
+            android:id="@+id/nav_exit"
+            android:title="退出"
+            />
+    </group>
+</menu>
