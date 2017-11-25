@@ -11,30 +11,33 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.music.guang.music.Adapter.SimpleFragmentPagerAdapter;
 import com.music.guang.music.Fragment.BendiMusicFragment;
+import com.music.guang.music.Fragment.NetWorkMusicFragment;
+import com.music.guang.music.NetworkMusic.GetMusic;
 import com.music.guang.music.Service.MusicPlayService;
+import com.music.guang.music.Utilt.NetworkUtils;
 import com.music.guang.music.Utilt.Timezh;
-
-import butterknife.ButterKnife;
-
-import static android.R.attr.tag;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,View.OnClickListener{
 
@@ -42,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private ViewPager viewPager;
     private BendiMusicFragment bendiMusicFragment;
+    private NetWorkMusicFragment netWorkMusicFragment;
     private TabLayout tabLayout;
     private ImageView img_user_head;
     private MusicPlayService musicPlayService;
@@ -50,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private SeekBar seekBar;
     private boolean isPlayed=false;//是否播放过
     private ReadMainBroadCastReceiver bmrcMain;
+    private SearchView searchView;
+    private int numkey=0;
     private String ReadServiceMsg="ReadServiceMsg",MainMsg="MainMsg";
     /*当前播放歌曲编号*/
     int ListNum = 0,progress;
@@ -114,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         IntentFilter filter = new IntentFilter(MainMsg);
         registerReceiver(bmrcMain, filter);
         System.out.println("Main广播接收器被创建....");
+
         // toolbar.setTitle("");
         setSupportActionBar(toolbar);
        // getSupportActionBar().setDisplayShowHomeEnabled(false);
@@ -135,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.setTabMode(TabLayout.MODE_FIXED);
         bendiMusicFragment=(BendiMusicFragment) pagerAdapter.getItem(0);
-
+        netWorkMusicFragment=(NetWorkMusicFragment) pagerAdapter.getItem(1);
 
 
 
@@ -152,6 +159,50 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toogle, menu);//指定Toolbar上的视图文件
+        MenuItem menuItem = menu.findItem(R.id.ab_search);
+        searchView = (SearchView) menu.findItem(R.id.ab_search).getActionView();
+       final SearchView.SearchAutoComplete searchTextArea = (SearchView.SearchAutoComplete) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
+
+        // 监听软键盘的删除键
+        searchTextArea.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_DEL) {
+                    numkey++;
+                    // 在这里加判断的原因是点击一次软键盘的删除键,会触发两次回调事件
+                    if (numkey % 2 != 0) {
+                        String s = searchTextArea.getText().toString();
+                        if (!TextUtils.isEmpty(s)) {
+                            searchTextArea.setText("" + s.substring(0, s.length() - 1));
+                            // 将光标移到最后
+                            searchTextArea.setSelection(searchTextArea.getText().length());
+                        }
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if (NetworkUtils.isNetworkAvailable(MainActivity.this)){
+                    GetMusic.getInstance().SearchMusic(MainActivity.this,netWorkMusicFragment.getMusicList(),query,1);
+                    netWorkMusicFragment.setNum(1);
+                }else {
+                    Toast.makeText(MainActivity.this,"network fail",Toast.LENGTH_LONG).show();
+                };
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
         return true;
     }
 
@@ -225,6 +276,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             // TODO Auto-generated method stub
             musicPlayService = ((MusicPlayService.MusicBinder) (service)).getService();
             bendiMusicFragment.setMusicPlayService(musicPlayService);
+            netWorkMusicFragment.setMusicPlayService(musicPlayService);
             musicPlayService.setMusicListData(MainActivity.this,
                     bendiMusicFragment.getMusicListData(),tv_startTime,
                     seekBar);
@@ -268,6 +320,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (!isPlayed) {
+//            if (bmrcMain!=null){
+//                unregisterReceiver(bmrcMain);
+//            }
+
             finish();
             return true;
         } else {

@@ -20,8 +20,12 @@ import android.util.Log;
 
 import com.music.guang.music.MainActivity;
 import com.music.guang.music.MusicData;
+import com.music.guang.music.NetworkData;
+import com.music.guang.music.NetworkMusic.GetSongUrl;
 import com.music.guang.music.R;
+import com.music.guang.music.Utilt.MD5Utils;
 import com.music.guang.music.Utilt.Timezh;
+import com.music.guang.music.Utilt.music_API;
 
 import java.io.IOException;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -30,6 +34,7 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.widget.RemoteViews;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 import java.util.Objects;
@@ -53,7 +58,7 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
     private Notification notify;
     private NotificationManager manager;
     private  Runnable tongzhilan;
-
+    private List<NetworkData> networListData;
     private MediaPlayer mediaPlayer;
     private List<MusicData> musicListData;
     public IBinder binder = new MusicBinder();
@@ -64,6 +69,7 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
     private int dantime;
     private TextView tv_startTime;
     private SeekBar seekBar;
+    private int type=0;
 
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
@@ -73,8 +79,12 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
     @Override
     public void onCompletion(MediaPlayer mp) {
          /*播放结束自动下一曲*/
+        if (type==0){
+            Log.d("播放完毕:", musicListData.get(ListNum).getDisName());
+        }else {
+            Log.d("播放完毕:", networListData.get(ListNum).getFilename());
+        }
 
-        Log.d("播放完毕:", musicListData.get(ListNum).getDisName());
         PLAYSTATE = NOPLAY;
         PlayNext(ListNum);
 
@@ -84,7 +94,7 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
     public void onPrepared(MediaPlayer mp) {
         mp.start();
         SendBroadCastReceiver(MainMsg, "isPlay",
-                musicListData.get(ListNum).getDisName(),
+                type==0?musicListData.get(ListNum).getDisName():networListData.get(ListNum).getFilename(),
                 1, mediaPlayer.getDuration());
         seekBar.setMax(mediaPlayer.getDuration());
         //设置通知栏
@@ -150,7 +160,7 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
                 remoteViews.setImageViewBitmap(R.id.play, BitmapFactory
                         .decodeResource(getResources(),android.R.drawable.ic_media_pause));
             SendBroadCastReceiver(MainMsg, "isPlay",
-                    musicListData.get(ListNum).getDisName(),
+                    type==0?musicListData.get(ListNum).getDisName():networListData.get(ListNum).getFilename(),
                     1, mediaPlayer.getDuration());
 
         }
@@ -228,38 +238,98 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
                 PLAYSTATE = PLAYING;
                 break;
         }
-        Log.d("播放： ", musicListData.get(ListNum).getDisName());
+        if (type==0) {
+            Log.d("播放： ", musicListData.get(ListNum).getDisName());
+        }else {
+            Log.d("播放： ", networListData.get(ListNum).getFilename());
+        }
     }
 
     /*播放下一曲*/
     public void PlayNext(int Num) {
         Num += 1;
-        if (Num > musicListData.size() - 1) {
-            Num = 0;
+        if (type==0){
+            if (Num > musicListData.size() - 1) {
+                Num = 0;
+            }
+        }else {
+            if (Num > networListData.size() - 1) {
+                Num = 0;
+            }
         }
         ListNum = Num;
         SendBroadCastReceiver(MainMsg, "ListNum", "", ListNum, 0);
-        PlayMUS(musicListData.get(Num).getUrl());
-        Log.d("下一曲：", musicListData.get(Num).getDisName());
+        if (type==0){
+            PlayMUS(musicListData.get(Num).getUrl());
+        }else {
+            String path=GetNetworkUrl(Num);
+            if (path==null||path.equals(""))
+            {
+                Toast.makeText(context,"this song not play,play next",Toast.LENGTH_LONG).show();
+                PlayNext(Num);
+            }else {
+                PlayMUS(path);
+            }
+
+        }
+
+
+        if (type==0) {
+            Log.d("下一曲：", musicListData.get(Num).getDisName());
+        }else {
+            Log.d("下一曲：", networListData.get(Num).getFilename());
+        }
     }
-    public void Play(int Num){
+    public void Play(int Num,int type){
+        this.type=type;
         ListNum=Num;
 //        if (musicListData==null)
 //            Log.d("musicListData","musicListData==null");
         SendBroadCastReceiver(MainMsg, "ListNum", "", ListNum, 0);
+        if (this.type==0) {
             PlayMUS(musicListData.get(Num).getUrl());
+        }else {
+            String path=GetNetworkUrl(Num);
+            if (path==null||path.equals(""))
+            {
+                Toast.makeText(context,"this song not play,play next",Toast.LENGTH_LONG).show();
+                PlayNext(Num);
+            }else {
+                PlayMUS(path);
+            }
+        }
     }
 
     /*播放上一曲*/
     public void PlayUpper(int Num) {
         Num -= 1;
-        if (Num <= 0) {
-            Num = musicListData.size()-1;
+        if (type==0){
+            if (Num <= 0) {
+                Num = musicListData.size()-1;
+
+            }
+            Log.d("上一曲：", musicListData.get(Num).getDisName());
+        }else {
+            if (Num <= 0) {
+                Num = networListData.size()-1;
+            }
+            Log.d("上一曲：", networListData.get(Num).getFilename());
         }
         ListNum = Num;
         SendBroadCastReceiver(MainMsg, "ListNum", "", ListNum, 0);
-        PlayMUS(musicListData.get(Num).getUrl());
-        Log.d("上一曲：", musicListData.get(Num).getDisName());
+        if (type==0) {
+            PlayMUS(musicListData.get(Num).getUrl());
+        }else {
+            String path=GetNetworkUrl(Num);
+            if (path==null||path.equals(""))
+            {
+                Toast.makeText(context,"this song not play,play next",Toast.LENGTH_LONG).show();
+                PlayNext(Num);
+            }else {
+                PlayMUS(path);
+            }
+        }
+    //    Log.d("上一曲：", musicListData.get(Num).getDisName());
     }
 
 
@@ -268,18 +338,39 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
         switch (PLAYSTATE) {
             case PLAYING:
                 setPlayingUriAudioPlayer(false);
-                Log.d("暂停播放", musicListData.get(ListNum).getDisName());
+                if (type==0){
+                    Log.d("暂停播放", musicListData.get(ListNum).getDisName());
+                }else {
+                    Log.d("暂停播放", networListData.get(ListNum).getFilename());
+                }
+
                 PLAYSTATE = PAUSED;
                 break;
             case PAUSED:
                 setPlayingUriAudioPlayer(true);
-                Log.d("恢复播放", musicListData.get(ListNum).getDisName());
+
+                if (type==0){
+                    Log.d("恢复播放", musicListData.get(ListNum).getDisName());
+                }else {
+                    Log.d("恢复播放", networListData.get(ListNum).getFilename());
+                }
                 PLAYSTATE = PLAYING;
                 break;
             case NOPLAY:
                 ListNum = 0;
                 // ListNum-=1;
-                PlayMUS(musicListData.get(ListNum).getUrl());
+                if (type==0){
+                    PlayMUS(musicListData.get(ListNum).getUrl());
+                }else {
+                    String path=GetNetworkUrl(ListNum);
+                    if (path==null||path.equals(""))
+                    {
+                        Toast.makeText(context,"this song not play,play next",Toast.LENGTH_LONG).show();
+                        PlayNext(ListNum);
+                    }else {
+                        PlayMUS(path);
+                    }
+                }
                 PLAYSTATE = PLAYING;
                 break;
         }
@@ -306,6 +397,9 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
     }
     public void setMusicListData(List<MusicData> musicListData){
         this.musicListData = musicListData;
+    }
+    public void setNetworListData(List<NetworkData> networListData){
+        this.networListData = networListData;
     }
 
     public boolean isPlaying() {
@@ -383,7 +477,8 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
                     }
 
                 } else if (intent.getIntExtra("state", 0) == 1) {
-                    if (PLAYSTATE!=PLAYING&&musicListData!=null&&musicListData.size()!=0){
+                    if ((PLAYSTATE!=PLAYING&&musicListData!=null&&musicListData.size()!=0)
+                            ||(PLAYSTATE!=PLAYING&&networListData!=null&&networListData.size()!=0)){
                         PauseMUS();
                     }
                 }
@@ -497,15 +592,28 @@ private BroadcastReceiver headsetPlugReceiver = new BroadcastReceiver() {
 
                 remoteViews = new RemoteViews(getPackageName(),
                         R.layout.customnotice);
-                if (musicListData.get(ListNum).getBnendi_pic() != null) {
-                    try {
-                        remoteViews.setImageViewBitmap(R.id.widget_album, musicListData.get(ListNum).getBnendi_pic());
-                    } catch (Exception e) {
-                        // TODO: handle exception
-                        e.printStackTrace();
+                if (type==0){
+                    if (musicListData.get(ListNum).getBnendi_pic() != null) {
+                        try {
+                            remoteViews.setImageViewBitmap(R.id.widget_album, musicListData.get(ListNum).getBnendi_pic());
+                        } catch (Exception e) {
+                            // TODO: handle exception
+                            e.printStackTrace();
+                        }
+                    } else {
+                        remoteViews.setImageViewResource(R.id.widget_album, R.drawable.lab);
                     }
-                } else {
-                    remoteViews.setImageViewResource(R.id.widget_album, R.drawable.lab);
+                }else {
+                    if (networListData.get(ListNum).getPic() != null) {
+                        try {
+                            remoteViews.setImageViewBitmap(R.id.widget_album, networListData.get(ListNum).getPic());
+                        } catch (Exception e) {
+                            // TODO: handle exception
+                            e.printStackTrace();
+                        }
+                    } else {
+                        remoteViews.setImageViewResource(R.id.widget_album, R.drawable.lab);
+                    }
                 }
                 remoteViews.setImageViewBitmap(R.id.last, BitmapFactory
                         .decodeResource(getResources(), android.R.drawable.ic_media_previous));
@@ -513,7 +621,12 @@ private BroadcastReceiver headsetPlugReceiver = new BroadcastReceiver() {
                         .decodeResource(getResources(), android.R.drawable.ic_media_next));
                 remoteViews.setImageViewBitmap(R.id.exit, BitmapFactory
                         .decodeResource(getResources(), android.R.drawable.ic_menu_close_clear_cancel));
-                remoteViews.setTextViewText(R.id.title, musicListData.get(ListNum).getDisName());
+                if (type==0){
+                    remoteViews.setTextViewText(R.id.title, musicListData.get(ListNum).getDisName());
+                }else {
+                    remoteViews.setTextViewText(R.id.title, networListData.get(ListNum).getFilename());
+                }
+
                 // remoteViews.setTextViewText(R.id.widget_artist, info.getArtist());
                 if (PLAYSTATE == PLAYING) {
                     remoteViews.setImageViewBitmap(R.id.play, BitmapFactory
@@ -527,5 +640,46 @@ private BroadcastReceiver headsetPlugReceiver = new BroadcastReceiver() {
         };
     }
         myhandler.post(tongzhilan);//设置通知栏
+    }
+    public String GetNetworkUrl(int num){
+        int chongshi=0;//重试次数
+        String uri="";
+        String hash="";
+        String uriType="";
+        String url="";
+        if (networListData.get(num).getHash320()!=null) {
+            hash = networListData.get(num).getHash320();
+            uriType="320";
+        }else {
+            hash = networListData.get(num).getHash128();
+            uriType="128";
+        }
+        uri= music_API.KgmusicDownload+"&hash="+hash+"&key="+ MD5Utils.getMD5(hash+"kgcloud");
+        GetSongUrl getSongUrl=new GetSongUrl(uri,networListData.get(num),uriType);
+        getSongUrl.execute();
+        while (true){
+            if ((networListData.get(num).getUrl320()!=null&&!networListData.get(num).getUrl320().equals(""))
+                    ||(networListData.get(num).getUrl128()!=null&&!networListData.get(num).getUrl128().equals(""))){
+                if (uriType.equals("320")){
+                    url=networListData.get(num).getUrl320();
+
+                }
+                if (uriType.equals("128")){
+                    url= networListData.get(num).getUrl128();
+                }
+                if (url==null){
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    if (chongshi++>15){
+                        return null;
+                    }
+                    continue;
+                }
+                return url;
+            }
+        }
     }
 }

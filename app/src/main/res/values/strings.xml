@@ -17,4 +17,5 @@
     <string name="snackbar_short">在short时间段内显示Snackbar</string>
     <string name="snackbar_action">设置Snackbar的action</string>
     <string name="snackbar_color">自定义Snackbar的文字颜色</string>
+    <string name="no_songs">没有找到歌曲</string>
 </resources>

@@ -28,6 +28,7 @@ public class SimpleFragmentPagerAdapter extends FragmentPagerAdapter {
             return BendiMusicFragment.newInstance(position);
         }else
         {
+          //  return NetWorkMusicFragment.newInstance(position);
             return NetWorkMusicFragment.newInstance(position);
         }
     }

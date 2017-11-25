@@ -103,7 +103,7 @@ public class BendiMusicFragment extends Fragment{
                 try {
 //                    if (musicPlayService==null)
 //                        Log.d("musicPlayService","musicPlayService=null");
-                    musicPlayService.Play(ListNum);
+                    musicPlayService.Play(ListNum,0);
                 }catch (Exception e){
                     //musicPlayService.setMusicListData(musicListData);
                     e.printStackTrace();
