@@ -35,11 +35,17 @@ private Context context;
 
     @Override
     protected NetworkData doInBackground(Void... voids) {
+        if (i>list.size()){
+            return null;
+        }
         try{
-            String addr = music_API.KgmusicInfo+list.get(i).getHash();
+            String addr="";
+            if (i<=list.size()) {
+                addr = music_API.KgmusicInfo + list.get(i).getHash();
+            }
              Log.d("I", ""+i+"="+addr);
             URL url = new URL(addr);
-            if (url!=null){
+            if (url!=null&&i<=list.size()){
                 InputStream kgmusicinfo = url.openConnection().getInputStream();
 
                 ByteArrayOutputStream outStream = new ByteArrayOutputStream();
@@ -53,7 +59,7 @@ private Context context;
                 String jason = new String(outStream.toByteArray());
                 JSONObject rootJson = new JSONObject(jason);
                 String status = rootJson.getString("status");
-                if(status.equals("1")){
+                if(status.equals("1")&&i<=list.size()){
                     list.get(i).setImgUrl(rootJson.getString("imgUrl").replace("{size}", "200"));
                     list.get(i).setUrl128(rootJson.getString("url"));
                     list.get(i).setReq_hash(rootJson.getString("req_hash"));
@@ -63,7 +69,7 @@ private Context context;
                 }else{
                     //Logger.e(TAG, "getLinks error errorCode=" + errorCode);
                 }
-                if (list.get(i).getImgUrl()!=null&&list.get(i).getPic()==null){
+                if (i<=list.size()&&list.get(i).getImgUrl()!=null&&list.get(i).getPic()==null){
                     for (int j=0;j<list.size()&&j!=i;j++) {
                         if (list.get(i).getSingername().equals(list.get(j).getSingername())){
                             if (list.get(j).getPic()!=null){
@@ -74,7 +80,7 @@ private Context context;
                         }
                     }
                     String img=list.get(i).getImgUrl();
-                    if (img!=null&&!img.equals("")){
+                    if (img!=null&&!img.equals("")&&i<=list.size()){
                         URL imgurl=new URL(img);
                         HttpURLConnection httpURLConnection= (HttpURLConnection) imgurl.openConnection();
                         httpURLConnection.setConnectTimeout(5000);// 设置网络连接超时的时间为3秒
@@ -103,14 +109,17 @@ private Context context;
             // TODO: handle exception
             e.printStackTrace();
         }
-        return list.get(i);
+        return null;
     }
 
     @Override
     protected void onPostExecute(NetworkData networkData) {
         super.onPostExecute(networkData);
+        if (networkData==null){
+            return;
+        }
         Intent intent = new Intent();
-        intent.putExtra("msg", "searchok");
+        intent.putExtra("msg", "picok");
         intent.setAction("networkMsg");
         context.sendBroadcast(intent);
     }
