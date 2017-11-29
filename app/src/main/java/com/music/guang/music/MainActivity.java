@@ -9,11 +9,9 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -28,21 +26,15 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
 import com.music.guang.music.Adapter.SimpleFragmentPagerAdapter;
 import com.music.guang.music.Fragment.BendiMusicFragment;
 import com.music.guang.music.Fragment.NetWorkMusicFragment;
@@ -71,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private SearchView searchView;
     private int numkey=0;
     private AdView mAdView;
-    private GoogleApiClient mGoogleApiClient;
     private InterstitialAd mInterstitialAd;
     private String ReadServiceMsg="ReadServiceMsg",MainMsg="MainMsg";
     /*当前播放歌曲编号*/
@@ -141,7 +132,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             AdRequest adRequest = new AdRequest.Builder().build();
 
             // Start loading the ad in the background.
+         //   mAdView.setAdUnitId(BannerId());
             mAdView.loadAd(adRequest);
+
 
             //插页广告
             mInterstitialAd = new InterstitialAd(this);
@@ -248,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                if (NetworkUtils.isNetworkAvailable(MainActivity.this)){
+                if (NetworkUtils.isNetworkAvailable(MainActivity.this)&&netWorkMusicFragment.isLoad()){
                     GetMusic.getInstance().SearchMusic(MainActivity.this,netWorkMusicFragment.getMusicList(),query,1);
                     viewPager.setCurrentItem(1);
                     netWorkMusicFragment.setNum(1);
@@ -421,20 +414,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //            if (bmrcMain!=null){
 //                unregisterReceiver(bmrcMain);
 //            }
+            ShowAd();
 
-            if (mInterstitialAd!=null&&mInterstitialAd.isLoaded()) {
-                mInterstitialAd.show();
-            } else {
-                Log.d("TAG", "The interstitial wasn't loaded yet.");
-            }
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             finish();
             return true;
         } else {
+            ShowAd();
             if (keyCode == KeyEvent.KEYCODE_BACK && isPlayed) {
                 moveTaskToBack(false);
                 return true;
@@ -442,6 +427,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         return super.onKeyDown(keyCode, event);
     }
+    private void ShowAd(){
+        if (mInterstitialAd!=null&&mInterstitialAd.isLoaded()) {
+            mInterstitialAd.show();
+        } else {
+            Log.d("TAG", "The interstitial wasn't loaded yet.");
+        }
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    };
     private native String BannerId();
     private native String InsertId();
 }
