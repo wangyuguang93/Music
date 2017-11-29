@@ -1,6 +1,8 @@
 package com.music.guang.music.Adapter;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
@@ -108,39 +110,102 @@ public class BendiMusicAdapter extends BaseAdapter {
 
     }
 
-    private void showPopupMenu(View view,final int index) {
-        // View当前PopupMenu显示的相对View的位置
-        PopupMenu popupMenu = new PopupMenu(context, view);
-        // menu布局
-        view.getId();
+//    private void showPopupMenu(View view,final int index) {
+//        // View当前PopupMenu显示的相对View的位置
+//        PopupMenu popupMenu = new PopupMenu(context, view);
+//        // menu布局
+//        view.getId();
+//
+//        popupMenu.getMenuInflater().inflate(R.menu.bendi_option, popupMenu.getMenu());
+//        // menu的item点击事件
+//        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+//            @Override
+//            public boolean onMenuItemClick(MenuItem item) {
+//                // Toast.makeText(mContext, item.getTitle(), Toast.LENGTH_SHORT).show();
+//                switch (item.getItemId()) {
+//                    case R.id.bendi_option_delete:
+//                        break;
+//                    case R.id.bendi_option_play:;
+//                        break;
+//                    case R.id.bendi_option_xiangqing:
+//                        break;
+//                    default:
+//                        break;
+//                }
+//                return false;
+//            }
+//        });
+//        // PopupMenu关闭事件
+//        popupMenu.setOnDismissListener(new PopupMenu.OnDismissListener() {
+//            @Override
+//            public void onDismiss(PopupMenu menu) {
+//                // Toast.makeText(mContext, "关闭PopupMenu", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//        popupMenu.show();
+private void showPopupMenu(View view,final int index) {
+    // View当前PopupMenu显示的相对View的位置
+    PopupMenu popupMenu = new PopupMenu(context, view);
+    // menu布局
+    view.getId();
 
-        popupMenu.getMenuInflater().inflate(R.menu.bendi_option, popupMenu.getMenu());
-        // menu的item点击事件
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                // Toast.makeText(mContext, item.getTitle(), Toast.LENGTH_SHORT).show();
-                switch (item.getItemId()) {
-                    case R.id.bendi_option_delete:
-                        break;
-                    case R.id.bendi_option_play:;
-                        break;
-                    case R.id.bendi_option_xiangqing:
-                        break;
-                    default:
-                        break;
-                }
-                return false;
+    popupMenu.getMenuInflater().inflate(R.menu.bendi_option, popupMenu.getMenu());
+    // menu的item点击事件
+    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            // Toast.makeText(mContext, item.getTitle(), Toast.LENGTH_SHORT).show();
+            switch (item.getItemId()) {
+                case R.id.bendi_option_delete:
+                    String deleteurl=musicListData.get(index).getUrl();
+                    String song=musicListData.get(index).getDisName();
+                    //Log.d("删除", ""+index);
+                    Log.d("删除", ""+deleteurl);
+                    //	Toast.makeText(context, song, Toast.LENGTH_SHORT).show();
+                    musicListData.remove(index);
+                    Intent intent = new Intent();
+                    intent.putExtra("msg", "deletefile");
+                    intent.putExtra("fileName",deleteurl);
+                    intent.setAction("MainMsg");
+                    context.sendBroadcast(intent);
+                    MediaScannerConnection.scanFile(context,
+                            new String[] { deleteurl },
+                            null, new MediaScannerConnection.OnScanCompletedListener() {
+                                public void onScanCompleted(String path, Uri uri) {
+                                    Log.i("ExternalStorage", "Scanned " + path + ":");
+                                    Log.i("ExternalStorage", "-> uri=" + uri);
+
+                                }
+                            });
+                    break;
+                case R.id.bendi_option_play:
+                    Intent play = new Intent();
+                    play.putExtra("msg", "bendiPlay");
+                    play.putExtra("int",index);
+                    play.setAction("MainMsg");
+                    context.sendBroadcast(play);
+                    break;
+                case R.id.bendi_option_xiangqing:
+                    AlertDialog.Builder xiangqing=new AlertDialog.Builder(context);
+                    xiangqing.setTitle("详情");
+                    xiangqing.setMessage("文件名："+musicListData.get(index).getDisName()+"\n"+"专辑:"+musicListData.get(index)
+                            .getAlbum()+"\n"+"大小:"+musicListData.get(index).getSize()/1024/1024+"M"+"\n"+"位置："+musicListData.get(index).getUrl());
+                    xiangqing.create().show();
+                    break;
+                default:
+                    break;
             }
-        });
-        // PopupMenu关闭事件
-        popupMenu.setOnDismissListener(new PopupMenu.OnDismissListener() {
-            @Override
-            public void onDismiss(PopupMenu menu) {
-                // Toast.makeText(mContext, "关闭PopupMenu", Toast.LENGTH_SHORT).show();
-            }
-        });
-        popupMenu.show();
+            return false;
+        }
+    });
+    // PopupMenu关闭事件
+    popupMenu.setOnDismissListener(new PopupMenu.OnDismissListener() {
+        @Override
+        public void onDismiss(PopupMenu menu) {
+            // Toast.makeText(mContext, "关闭PopupMenu", Toast.LENGTH_SHORT).show();
+        }
+    });
+    popupMenu.show();
     }
     ///////////////////////抽取接口//////////////////>
     /**

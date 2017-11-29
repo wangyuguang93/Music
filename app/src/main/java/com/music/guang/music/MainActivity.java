@@ -3,11 +3,13 @@ package com.music.guang.music;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
@@ -15,6 +17,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
@@ -31,6 +34,15 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
 import com.music.guang.music.Adapter.SimpleFragmentPagerAdapter;
 import com.music.guang.music.Fragment.BendiMusicFragment;
 import com.music.guang.music.Fragment.NetWorkMusicFragment;
@@ -39,7 +51,9 @@ import com.music.guang.music.Service.MusicPlayService;
 import com.music.guang.music.Utilt.NetworkUtils;
 import com.music.guang.music.Utilt.Timezh;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,View.OnClickListener{
+import java.io.File;
+
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,View.OnClickListener {
 
     private SimpleFragmentPagerAdapter pagerAdapter;
 
@@ -56,6 +70,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ReadMainBroadCastReceiver bmrcMain;
     private SearchView searchView;
     private int numkey=0;
+    private AdView mAdView;
+    private GoogleApiClient mGoogleApiClient;
+    private InterstitialAd mInterstitialAd;
     private String ReadServiceMsg="ReadServiceMsg",MainMsg="MainMsg";
     /*当前播放歌曲编号*/
     int ListNum = 0,progress;
@@ -66,8 +83,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         System.loadLibrary("native-lib");
     }
 
+
     @Override
     protected void onDestroy() {
+        if (mAdView != null) {
+            mAdView.destroy();
+        }
         unbindService(sc);
         if (bmrcMain!=null){
             unregisterReceiver(bmrcMain);
@@ -77,22 +98,57 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
+    protected void onPause() {
+        if (mAdView != null) {
+            mAdView.pause();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        if (mAdView != null) {
+            mAdView.pause();
+        }
+        super.onResume();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //找控件
-        Toolbar toolbar= (Toolbar) findViewById(R.id.toolbar);
-        viewPager = (ViewPager) findViewById(R.id.viewPager);
-        tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        img_z_last= (ImageView) findViewById(R.id.img_z_last);
-        img_z_play= (ImageView) findViewById(R.id.img_z_play);
-        img_z_next= (ImageView) findViewById(R.id.img_z_next);
-        img_z_touxiang= (ImageView) findViewById(R.id.img_z_touxiang);
-        tv_Song_Title= (TextView) findViewById(R.id.tv_Song_Title);
-        tv_startTime= (TextView) findViewById(R.id.tv_startTime);
-        tv_endTime= (TextView) findViewById(R.id.tv_endTime);
-        tv_Song_num= (TextView) findViewById(R.id.tv_Song_num);
-        seekBar= (SeekBar) findViewById(R.id.seekBar);
+        try {
+            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            viewPager = (ViewPager) findViewById(R.id.viewPager);
+            tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+            img_z_last = (ImageView) findViewById(R.id.img_z_last);
+            img_z_play = (ImageView) findViewById(R.id.img_z_play);
+            img_z_next = (ImageView) findViewById(R.id.img_z_next);
+            img_z_touxiang = (ImageView) findViewById(R.id.img_z_touxiang);
+            tv_Song_Title = (TextView) findViewById(R.id.tv_Song_Title);
+            tv_startTime = (TextView) findViewById(R.id.tv_startTime);
+            tv_endTime = (TextView) findViewById(R.id.tv_endTime);
+            tv_Song_num = (TextView) findViewById(R.id.tv_Song_num);
+            seekBar = (SeekBar) findViewById(R.id.seekBar);
+            mAdView = (AdView) findViewById(R.id.ad_view);
+
+            //广告
+            // MobileAds.initialize(this, "ca-app-pub-3940256099942544/5224354917");
+
+            //     if (NetworkUtils.isNetworkAvailable(this)){
+            MobileAds.initialize(this, "ca-app-pub-2160621189322911~4470473187");
+            AdRequest adRequest = new AdRequest.Builder().build();
+
+            // Start loading the ad in the background.
+            mAdView.loadAd(adRequest);
+
+            //插页广告
+            mInterstitialAd = new InterstitialAd(this);
+            //  mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
+            mInterstitialAd.setAdUnitId(InsertId());
+            mInterstitialAd.loadAd(new AdRequest.Builder().build());
+        //}
 
         //设置监听器
         img_z_last.setOnClickListener(this);
@@ -141,6 +197,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         viewPager.setAdapter(pagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.setTabMode(TabLayout.MODE_FIXED);
+
         bendiMusicFragment=(BendiMusicFragment) pagerAdapter.getItem(0);
         netWorkMusicFragment=(NetWorkMusicFragment) pagerAdapter.getItem(1);
 
@@ -148,6 +205,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
        // ButterKnife.bind(this);
+    }catch (Exception e){
+        e.printStackTrace();
+        }
     }
 
     /**
@@ -190,9 +250,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public boolean onQueryTextSubmit(String query) {
                 if (NetworkUtils.isNetworkAvailable(MainActivity.this)){
                     GetMusic.getInstance().SearchMusic(MainActivity.this,netWorkMusicFragment.getMusicList(),query,1);
+                    viewPager.setCurrentItem(1);
                     netWorkMusicFragment.setNum(1);
                 }else {
-                    Toast.makeText(MainActivity.this,"network fail",Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this,R.string.network_fail,Toast.LENGTH_LONG).show();
                 };
                 return false;
             }
@@ -211,17 +272,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         int id = item.getItemId();
         switch (id){
-            case R.id.nav_bendi_music:
+//            case R.id.nav_bendi_music:
+//
+//                break;
+//            case R.id.nav_play_list:
+//
+//                break;
+//            case R.id.nav_download_manage:
+//
+//                break;
+//            case R.id.nav_setting:
+//
+//                break;
+            case R.id.nav_about:
+                AlertDialog.Builder builder=new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle(R.string.about);
+                builder.setMessage(R.string.aboutmsg);
+                builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
 
-                break;
-            case R.id.nav_play_list:
-
-                break;
-            case R.id.nav_download_manage:
-
-                break;
-            case R.id.nav_setting:
-
+                    }
+                });
+                builder.create().show();
                 break;
             case R.id.nav_exit:
                 if (musicPlayService.isPlaying())
@@ -240,6 +313,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onClick(View v) {
+        if (bendiMusicFragment.getMusicListData().size()==0&&musicPlayService.getType()==0){
+            Toast.makeText(this,R.string.no_play_songs,Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         int id = v.getId();
         switch (id){
             case R.id.img_user_head:
@@ -276,7 +354,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             // TODO Auto-generated method stub
             musicPlayService = ((MusicPlayService.MusicBinder) (service)).getService();
             bendiMusicFragment.setMusicPlayService(musicPlayService);
-            netWorkMusicFragment.setMusicPlayService(musicPlayService);
+            if (netWorkMusicFragment!=null){
+                netWorkMusicFragment.setMusicPlayService(musicPlayService);
+            }
+
             musicPlayService.setMusicListData(MainActivity.this,
                     bendiMusicFragment.getMusicListData(),tv_startTime,
                     seekBar);
@@ -296,22 +377,39 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     bendiMusicFragment.setSelection(ListNum);
                     break;
                 case "isPlay":
-                    if (intent.getIntExtra("int",ListNum)==0){
-                        img_z_play.setImageDrawable(getDrawable(android.R.drawable.ic_media_play));
-                        break;
-                    }if (intent.getIntExtra("int",ListNum)==1){
-                    isPlayed=true;
-                    tv_Song_num.setText(""+(ListNum+1)+"/"+bendiMusicFragment.getMusicListData().size());
-                    tv_Song_Title.setText(intent.getStringExtra("obj"));
-                    tv_endTime.setText(Timezh.getDisTimeLong(intent.getIntExtra("int2",0)));
-                    img_z_play.setImageDrawable(getDrawable(android.R.drawable.ic_media_pause));
-                    if (bendiMusicFragment.getMusicListData().get(ListNum).getBnendi_pic()!=null){
-                        img_z_touxiang.setImageBitmap(bendiMusicFragment.getMusicListData().get(ListNum).getBnendi_pic());
-                    }else {
-                        img_z_touxiang.setImageDrawable(getDrawable(R.drawable.deault_zhuanji_mini));
+                    try {
+                        if (intent.getIntExtra("int",ListNum)==0){
+                            img_z_play.setImageDrawable(getDrawable(android.R.drawable.ic_media_play));
+                        }if (intent.getIntExtra("int",ListNum)==1){
+                            isPlayed=true;
+                            tv_Song_num.setText(""+(ListNum+1)+"/"+bendiMusicFragment.getMusicListData().size());
+                            tv_Song_Title.setText(intent.getStringExtra("obj"));
+                            tv_endTime.setText(Timezh.getDisTimeLong(intent.getIntExtra("int2",0)));
+                            img_z_play.setImageDrawable(getDrawable(android.R.drawable.ic_media_pause));
+                            if (bendiMusicFragment.getMusicListData().get(ListNum).getBnendi_pic()!=null&&musicPlayService.getType()==0){
+                                img_z_touxiang.setImageBitmap(bendiMusicFragment.getMusicListData().get(ListNum).getBnendi_pic());
+                            }else if(netWorkMusicFragment.getMusicList().get(ListNum).getPic()!=null&&musicPlayService.getType()==1){
+                                img_z_touxiang.setImageBitmap(netWorkMusicFragment.getMusicList().get(ListNum).getPic());
+                            }else {
+                                img_z_touxiang.setImageDrawable(getDrawable(R.drawable.deault_zhuanji_mini));
+                            }
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
                     }
+                break;
+                case "updatemusicdate":
+                    bendiMusicFragment.updateMusiclist();
                     break;
-                }
+                case "deletefile":
+                    File file=new File(intent.getStringExtra("fileName"));
+                    bendiMusicFragment.delete(file);
+                    bendiMusicFragment.deleteupdate();
+                    break;
+                case "bendiPlay":
+
+                    bendiMusicFragment.play(intent.getIntExtra("int",ListNum));
+                    break;
                 case "exit":
                     finish();
             }
@@ -324,6 +422,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //                unregisterReceiver(bmrcMain);
 //            }
 
+            if (mInterstitialAd!=null&&mInterstitialAd.isLoaded()) {
+                mInterstitialAd.show();
+            } else {
+                Log.d("TAG", "The interstitial wasn't loaded yet.");
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             finish();
             return true;
         } else {
@@ -334,4 +442,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         return super.onKeyDown(keyCode, event);
     }
+    private native String BannerId();
+    private native String InsertId();
 }

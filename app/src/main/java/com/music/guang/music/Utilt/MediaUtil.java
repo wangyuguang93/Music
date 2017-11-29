@@ -3,6 +3,8 @@ import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
@@ -25,7 +27,8 @@ public class MediaUtil {
 	 * @param context
 	 * @return
 	 */
-	public static Bitmap getDefaultArtwork(Context context,boolean small) {
+	@SuppressLint("ResourceType")
+	public static Bitmap getDefaultArtwork(Context context, boolean small) {
 		Options opts = new Options();
 		opts.inPreferredConfig = Bitmap.Config.RGB_565;
 		if(small){	//返回小图片

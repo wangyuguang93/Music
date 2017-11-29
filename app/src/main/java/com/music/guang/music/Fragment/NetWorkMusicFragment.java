@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -16,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,6 +49,8 @@ public  class NetWorkMusicFragment extends android.support.v4.app.Fragment{
     private int num=1;//
     private boolean isLoad=true;
     private String key="akb48";
+    private TextView tv_error;
+    private ProgressBar progressBar;
     private MusicPlayService musicPlayService;
 
 
@@ -81,32 +85,45 @@ public  class NetWorkMusicFragment extends android.support.v4.app.Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         View view;
-        if (NetworkUtils.isNetworkAvailable(context)) {
             view = inflater.inflate(R.layout.networkmusic, container, false);
 
-            Log.d("加载onCreateView","加载onCreateView");
-            listView= (ListView) view;
+            Log.d("加载onCreateView", "加载onCreateView");
+            listView = (ListView) view.findViewById(R.id.network_listview);
+            tv_error= (TextView) view.findViewById(R.id.tv_error);
+            progressBar= (ProgressBar) view.findViewById(R.id.progressBar);
+            tv_error.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
+            listView.setVisibility(View.VISIBLE);
 
             //listView.setText("Fragment #" + mPage)
-            if (netWorkMusicApapter==null)
-            {
-                netWorkMusicApapter=new NetWorkMusicApapter(context,musicList);
-            }
+        if (netWorkMusicApapter == null) {
+            netWorkMusicApapter = new NetWorkMusicApapter(context, musicList);
+        }
             listView.setAdapter(netWorkMusicApapter);
-            if (musicList.size()<=0) {
-                GetMusic.getInstance().SearchMusic(context, musicList, key, num);
+            if (musicList.size() <= 0) {
+                if (NetworkUtils.isNetworkAvailable(context)) {
+                    GetMusic.getInstance().SearchMusic(context, musicList, key, num);
+                    tv_error.setVisibility(View.GONE);
+                    progressBar.setVisibility(View.VISIBLE);
+                    listView.setVisibility(View.GONE);
+                }
+                else {
+                    tv_error.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+                    listView.setVisibility(View.GONE);
 
+                }
             }
             listView.setOnScrollListener(new AbsListView.OnScrollListener() {
                 @Override
                 public void onScrollStateChanged(AbsListView absListView, int i) {
                     if (lastItem == listView.getCount() - 1 && i == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
 
-                        if (isLoad&&num <= 5 &&musicList.size()%20==0) {
-                            if (num++<=5){
-                                Log.d("加载更多",key+":"+num);
+                        if (isLoad && num <= 5 && musicList.size() % 20 == 0&&NetworkUtils.isNetworkAvailable(context)) {
+                            if (num++ <= 5) {
+                                Log.d("加载更多", key + ":" + num);
                                 GetMusic.getInstance().SearchMusic(context, musicList, key, num);
-                                isLoad=false;
+                                isLoad = false;
                             }
 
                         }
@@ -118,27 +135,39 @@ public  class NetWorkMusicFragment extends android.support.v4.app.Fragment{
                     lastItem = i + i1 - 1;
                 }
             });
-        }else {
-            view = inflater.inflate(R.layout.networkerror, container, false);
-        }
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                musicPlayService.setNetworListData(musicList);
-                if (NetworkUtils.isNetworkAvailable(context)){
-                    if (musicList.get(i).getPic()==null){
-                        Toast.makeText(context,"this song not play",Toast.LENGTH_SHORT).show();
-                    }else {
-                        musicPlayService.Play(i,1);
+
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    musicPlayService.setNetworListData(musicList);
+                    if (NetworkUtils.isNetworkAvailable(context)) {
+                        if (musicList.get(i).getPic() == null) {
+                            Toast.makeText(context, "this song not play", Toast.LENGTH_SHORT).show();
+                        } else {
+                            musicPlayService.Play(i, 1);
+                        }
+
+
+                    } else {
+                        Toast.makeText(context, R.string.network_fail, Toast.LENGTH_LONG).show();
                     }
 
-                }else {
-                    Toast.makeText(context,"network fail",Toast.LENGTH_LONG).show();
                 }
-
-            }
-        });
+            });
+            tv_error.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (NetworkUtils.isNetworkAvailable(context)) {
+                        GetMusic.getInstance().SearchMusic(context, musicList, key, num);
+                        tv_error.setVisibility(View.GONE);
+                        progressBar.setVisibility(View.VISIBLE);
+                        listView.setVisibility(View.GONE);
+                    }else {
+                        Toast.makeText(context,R.string.network_fail,Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
 
         return view;
     }
@@ -150,8 +179,12 @@ public  class NetWorkMusicFragment extends android.support.v4.app.Fragment{
         public void onReceive(Context context, Intent intent) {
             switch (intent.getStringExtra("msg")){
                 case "searchok":
+                    tv_error.setVisibility(View.GONE);
+                    progressBar.setVisibility(View.GONE);
+                    listView.setVisibility(View.VISIBLE);
                     netWorkMusicApapter.notifyDataSetChanged();
                     isLoad=true;
+
                 default:
                     break;
             }
@@ -165,8 +198,9 @@ public  class NetWorkMusicFragment extends android.support.v4.app.Fragment{
     }
     public void setMusicPlayService (MusicPlayService musicPlayService){
         this.musicPlayService=musicPlayService;
-//        if (this.musicPlayService==null)
-//                Log.e("警告","musicPlayService==null");
+        if (netWorkMusicApapter!=null) {
+            netWorkMusicApapter.setMusicPlayService(musicPlayService);
+        }
     }
     public void setSelection(int position)
     {

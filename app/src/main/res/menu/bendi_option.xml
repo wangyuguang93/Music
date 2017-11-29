@@ -5,17 +5,17 @@
      android:id="@+id/bendi_option_play" 
      android:orderInCategory="100"
        app:showAsAction="never"
-     android:title="播放"
+     android:title="@string/play"
     /> 
   <item 
     android:id="@+id/bendi_option_delete" 
     android:orderInCategory="100"
-    android:title="删除"
+    android:title="@string/delete"
       app:showAsAction="never"/>
   <item 
     android:id="@+id/bendi_option_xiangqing" 
     android:orderInCategory="100"
       app:showAsAction="never"
-    android:title="详情" 
+    android:title="@string/particulars"
     /> 
  </menu> 

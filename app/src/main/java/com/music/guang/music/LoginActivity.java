@@ -104,7 +104,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 return;
             if(!checkPswd(mEditTextPassword.getText(),true))
                 return;
-            Toast.makeText(this,"登录成功",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,R.string.user_login_sucess,Toast.LENGTH_SHORT).show();
             finish();
         }
 
@@ -113,6 +113,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private boolean checkPswd(CharSequence pswd,boolean isLogin) {
         if(TextUtils.isEmpty(pswd)) {
             if(isLogin) {
+
+
                 mTextInputLayoutPswd.setError(getString(R.string.error_pswd_empty));
                 return false;
             }

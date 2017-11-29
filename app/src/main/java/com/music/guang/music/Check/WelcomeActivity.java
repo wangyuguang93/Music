@@ -6,6 +6,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,6 +16,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.music.guang.music.MainActivity;
 import com.music.guang.music.R;
@@ -25,6 +29,8 @@ import com.music.guang.music.R;
 public class WelcomeActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE = 111; // 请求码
+    private LinearLayout  notice_btn;
+    private ImageView img;
     // 所需的全部权限
     static final String[] PERMISSIONS = new String[]{
             //       Manifest.permission.MEDIA_CONTENT_CONTROL,
@@ -41,9 +47,21 @@ public class WelcomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
-        view = View.inflate(this, R.layout.welcome, null);
-        setContentView(view);
+//        view = View.inflate(this, R.layout.welcome, null);
+//        Resources resources = getApplicationContext().getResources();
+//        Drawable btnDrawable = resources.getDrawable(R.drawable.welcome);
+//        notice_btn= (LinearLayout) view.findViewById(R.id.linearLayout2);
+//        notice_btn.setBackgroundDrawable(btnDrawable);
+        setContentView(R.layout.welcome);
+//        img= (ImageView) findViewById(R.id.imageView2);
+//        Bitmap bitmap= BitmapFactory.decodeResource(getResources(),R.drawable.welcome);
+//        img.setImageBitmap(bitmap);
+//        notice_btn= (LinearLayout) findViewById(R.id.linearLayout2);
+//        notice_btn.setb
+
+
         PermissionCheck();
     }
 
@@ -61,7 +79,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        requestWindowFeature(Window.FEATURE_NO_TITLE); // 无标题
+       // requestWindowFeature(Window.FEATURE_NO_TITLE); // 无标题
         super.onActivityResult(requestCode, resultCode, data);
         /**
          * 若权限拒绝

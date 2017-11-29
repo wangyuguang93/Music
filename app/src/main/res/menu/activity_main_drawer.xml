@@ -3,19 +3,27 @@
     <group android:checkableBehavior="none">
         <item
             android:id="@+id/nav_bendi_music"
-            android:title="本地音乐"
+            android:title="@string/Local_music"
            />
-        <item
-            android:id="@+id/nav_play_list"
-            android:title="播放列表"
-            />
-        <item
-            android:id="@+id/nav_me_shouzang"
-            android:title="我的收藏"
-            />
-        <item
-            android:id="@+id/nav_download_manage"
-            android:title="下载管理" />
+        <!--
+      <item
+          android:id="@+id/nav_play_list"
+          android:title="播放列表"
+          />
+
+      <item
+          android:id="@+id/nav_me_shouzang"
+          android:title="我的收藏"
+          />
+      <item
+          android:id="@+id/nav_download_manage"
+          android:title="下载管理" />
+          -->
+      <item
+          android:id="@+id/nav_about"
+          android:title="@string/about" />
+
+        <!--
     </group>
     <group android:checkableBehavior="none"
         android:id="@+id/group_setting">
@@ -23,12 +31,14 @@
             android:id="@+id/nav_setting"
             android:title="设置"
             />
+           -->
     </group>
+
     <group android:checkableBehavior="none"
         android:id="@+id/group_exit">
         <item
             android:id="@+id/nav_exit"
-            android:title="退出"
+            android:title="@string/exit"
             />
     </group>
 </menu>

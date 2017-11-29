@@ -7,5 +7,5 @@
         android:orderInCategory="80"
         app:actionViewClass="android.support.v7.widget.SearchView"
         app:showAsAction="ifRoom"
-        android:title="搜歌" />
+        android:title="@string/Song_search" />
 </menu>

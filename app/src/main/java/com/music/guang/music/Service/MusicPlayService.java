@@ -24,6 +24,7 @@ import com.music.guang.music.NetworkData;
 import com.music.guang.music.NetworkMusic.GetSongUrl;
 import com.music.guang.music.R;
 import com.music.guang.music.Utilt.MD5Utils;
+import com.music.guang.music.Utilt.NetworkUtils;
 import com.music.guang.music.Utilt.Timezh;
 import com.music.guang.music.Utilt.music_API;
 
@@ -261,15 +262,8 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
         SendBroadCastReceiver(MainMsg, "ListNum", "", ListNum, 0);
         if (type==0){
             PlayMUS(musicListData.get(Num).getUrl());
-        }else {
-            String path=GetNetworkUrl(Num);
-            if (path==null||path.equals(""))
-            {
-                Toast.makeText(context,"this song not play,play next",Toast.LENGTH_LONG).show();
-                PlayNext(Num);
-            }else {
-                PlayMUS(path);
-            }
+        }else  {
+            GetNetworkUrl(Num);
 
         }
 
@@ -289,14 +283,7 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
         if (this.type==0) {
             PlayMUS(musicListData.get(Num).getUrl());
         }else {
-            String path=GetNetworkUrl(Num);
-            if (path==null||path.equals(""))
-            {
-                Toast.makeText(context,"this song not play,play next",Toast.LENGTH_LONG).show();
-                PlayNext(Num);
-            }else {
-                PlayMUS(path);
-            }
+            GetNetworkUrl(Num);
         }
     }
 
@@ -320,14 +307,7 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
         if (type==0) {
             PlayMUS(musicListData.get(Num).getUrl());
         }else {
-            String path=GetNetworkUrl(Num);
-            if (path==null||path.equals(""))
-            {
-                Toast.makeText(context,"this song not play,play next",Toast.LENGTH_LONG).show();
-                PlayNext(Num);
-            }else {
-                PlayMUS(path);
-            }
+            GetNetworkUrl(Num);
         }
     //    Log.d("上一曲：", musicListData.get(Num).getDisName());
     }
@@ -362,14 +342,7 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
                 if (type==0){
                     PlayMUS(musicListData.get(ListNum).getUrl());
                 }else {
-                    String path=GetNetworkUrl(ListNum);
-                    if (path==null||path.equals(""))
-                    {
-                        Toast.makeText(context,"this song not play,play next",Toast.LENGTH_LONG).show();
-                        PlayNext(ListNum);
-                    }else {
-                        PlayMUS(path);
-                    }
+                    GetNetworkUrl(ListNum);
                 }
                 PLAYSTATE = PLAYING;
                 break;
@@ -461,6 +434,20 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
                 case "play":
                     PauseMUS();
                     break;
+                case "urlok": {
+                    String url320 = (networListData.get(ListNum).getUrl320());
+                    String ur128 = (networListData.get(ListNum).getUrl128());
+
+                    if (url320 != null&&url320.contains("http")) {
+                        PlayMUS(url320);
+                    } else if (ur128 != null&&ur128.contains("http")) {
+                        PlayMUS(ur128);
+                    } else {
+                        Toast.makeText(context,"this song not paly,play next",Toast.LENGTH_SHORT).show();
+                        PlayNext(ListNum);
+                    }
+                    break;
+                }
 
             }
         }
@@ -641,45 +628,16 @@ private BroadcastReceiver headsetPlugReceiver = new BroadcastReceiver() {
     }
         myhandler.post(tongzhilan);//设置通知栏
     }
-    public String GetNetworkUrl(int num){
-        int chongshi=0;//重试次数
-        String uri="";
-        String hash="";
-        String uriType="";
-        String url="";
-        if (networListData.get(num).getHash320()!=null) {
-            hash = networListData.get(num).getHash320();
-            uriType="320";
-        }else {
-            hash = networListData.get(num).getHash128();
-            uriType="128";
-        }
-        uri= music_API.KgmusicDownload+"&hash="+hash+"&key="+ MD5Utils.getMD5(hash+"kgcloud");
-        GetSongUrl getSongUrl=new GetSongUrl(uri,networListData.get(num),uriType);
+    public void GetNetworkUrl(int num){
+        if (NetworkUtils.isNetworkAvailable(context)){
+        GetSongUrl getSongUrl=new GetSongUrl(context,networListData.get(num));
         getSongUrl.execute();
-        while (true){
-            if ((networListData.get(num).getUrl320()!=null&&!networListData.get(num).getUrl320().equals(""))
-                    ||(networListData.get(num).getUrl128()!=null&&!networListData.get(num).getUrl128().equals(""))){
-                if (uriType.equals("320")){
-                    url=networListData.get(num).getUrl320();
-
-                }
-                if (uriType.equals("128")){
-                    url= networListData.get(num).getUrl128();
-                }
-                if (url==null){
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    if (chongshi++>15){
-                        return null;
-                    }
-                    continue;
-                }
-                return url;
-            }
+        }else {
+            Toast.makeText(context,"network is fail",Toast.LENGTH_SHORT).show();
         }
+
+    }
+    public int getType(){
+        return type;
     }
 }

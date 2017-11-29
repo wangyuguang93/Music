@@ -3,19 +3,29 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_settings">设置</string>
-    <string name="click_login">点击头像登录</string>
-    <string name="hint_name">用户名/Email/手机号</string>
-    <string name="hint_password">密码</string>
+    <string name="action_settings">setting</string>
+    <string name="click_login">Click on the avatar login</string>
+    <string name="hint_name">User name/Email/phone number</string>
+    <string name="hint_password">password</string>
 
-    <string name="user_login">用户登录</string>
-    <string name="login">登录</string>
-    <string name="error_login_empty">用户名/Email/手机号不能为空</string>
-    <string name="error_pswd_empty">密码不能为空</string>
-    <string name="snackbar_indefinitely">无限期显示Snackbar</string>
-    <string name="snackbar_long">在Long时间段内显示Snackbar</string>
-    <string name="snackbar_short">在short时间段内显示Snackbar</string>
-    <string name="snackbar_action">设置Snackbar的action</string>
-    <string name="snackbar_color">自定义Snackbar的文字颜色</string>
-    <string name="no_songs">没有找到歌曲</string>
+    <string name="user_login">user login</string>
+    <string name="user_login_sucess">Login successful</string>
+    <string name="login">Login</string>
+    <string name="error_login_empty">User name/Email/phone number cannot be empty</string>
+    <string name="error_pswd_empty">The password cannot be empty</string>
+    <string name="no_songs">No song found</string>
+    <string name="about">about</string>
+    <string name="exit">exit</string>
+    <string name="play">play</string>
+    <string name="network_fail">Network connection failed</string>
+    <string name="delete">delete</string>
+    <string name="download">download</string>
+    <string name="particulars">particulars</string>
+    <string name="tv_string">Network connection failed\n Click this retry</string>
+    <string name="Song_search">Song search</string>
+    <string name="Local_music">Local music</string>
+    <string name="Online_music">Online music</string>
+    <string name="no_play_songs">There was no song to play</string>
+    <string name="aboutmsg">Statement: the developer does not take any legal responsibility for the software</string>
+    <string name="banner_ad_unit_id">ca-app-pub-2160621189322911/7600690099</string>
 </resources>
