@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.music.guang.music">
+    package="com.music.guang.musicG">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.READ_SMS"/>
     <uses-permission android:name="android.permission.SET_WALLPAPER"/>
 
     <application
@@ -19,9 +16,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".Check.WelcomeActivity"
+            android:name="com.music.guang.musicG.Check.WelcomeActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.AppStartLoadTranslucent"
+            android:theme="@style/AppTheme.NoActionBar"
             android:priority="1000"
             >
 
@@ -31,14 +28,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".LoginActivity"
+        <activity android:name="com.music.guang.musicG.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
-        <activity android:name=".MainActivity"
+        <activity android:name="com.music.guang.musicG.MainActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan"/>
-        <activity android:name=".Check.PermissionActivity"
+        <activity android:name="com.music.guang.musicG.Check.PermissionActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
-        <service android:name=".Service.MusicPlayService"/>
+        <service android:name="com.music.guang.musicG.Service.MusicPlayService"/>
     </application>
 
 </manifest>

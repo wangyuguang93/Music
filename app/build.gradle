@@ -4,11 +4,11 @@ android {
     compileSdkVersion 25
     buildToolsVersion '26.0.2'
     defaultConfig {
-        applicationId "com.music.guang.music"
-        minSdkVersion 23
+        applicationId "com.music.guang.musicG"
+        minSdkVersion 20
         targetSdkVersion 25
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
@@ -40,5 +40,5 @@ dependencies {
     compile 'com.android.support:design:26.0.0-alpha1'
     compile 'com.jakewharton:butterknife:8.8.1'
     implementation 'com.google.android.gms:play-services-ads:11.6.0'
-    implementation 'com.google.android.gms:play-services:11.6.0'
+    implementation 'com.google.android.gms:play-services:11.6.2'
 }
