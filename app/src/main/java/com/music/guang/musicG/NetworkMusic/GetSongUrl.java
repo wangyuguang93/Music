@@ -25,6 +25,7 @@ public class GetSongUrl extends AsyncTask<Void,Void,NetworkData>{
     private String urlType;
     private Context context;
     private String ReadServiceMsg = "ReadServiceMsg", MainMsg = "MainMsg";
+// 构造函数
     public GetSongUrl(Context context,NetworkData networkData){
 //    this.uri=uri;
     this.info=networkData;
@@ -33,6 +34,11 @@ public class GetSongUrl extends AsyncTask<Void,Void,NetworkData>{
     }
     @Override
     protected NetworkData doInBackground(Void... voids) {
+        String hh1=info.getUrl320();
+        if (info.getUrl320()!=null){
+            return info;
+        }
+
         try {
 
             String hash320=info.getHash320();
@@ -41,10 +47,11 @@ public class GetSongUrl extends AsyncTask<Void,Void,NetworkData>{
             String keysq= MD5Utils.getMD5(hashsq+"kgcloud");
             String addr320 = music_API.KgmusicDownload+"&hash="+hash320+"&key="+key320;
             String addrsp = music_API.KgmusicDownload+"&hash="+hashsq+"&key="+keysq;
-            Log.d("addr", addr320);
+
             URL url320 = new URL(addr320);
             URL urlsq = new URL(addrsp);
             //获取320链接
+         //   Log.d("获取320链接", addr320);
             InputStream ips320 = url320.openConnection().getInputStream();
 
             ByteArrayOutputStream outStream320 = new ByteArrayOutputStream();
@@ -65,6 +72,7 @@ public class GetSongUrl extends AsyncTask<Void,Void,NetworkData>{
                 //Logger.e(TAG, "getLinks error errorCode=" + errorCode);
             }
             //获取无损链接
+         //   Log.d("获取无损链接", addrsp);
             InputStream ipssq = urlsq.openConnection().getInputStream();
 
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
@@ -118,9 +126,13 @@ public class GetSongUrl extends AsyncTask<Void,Void,NetworkData>{
     @Override
     protected void onPostExecute(NetworkData s) {
         super.onPostExecute(s);
-        Intent urlplay = new Intent();
-        urlplay.putExtra("msg", "urlok");
-        urlplay.setAction(ReadServiceMsg);
-        context.sendBroadcast(urlplay);
+        if (!s.getisUrlok()) {
+            Intent urlplay = new Intent();
+            urlplay.putExtra("msg", "urlok");
+            urlplay.setAction(ReadServiceMsg);
+            context.sendBroadcast(urlplay);
+        }else {
+            s.setisUrlok(false);
+        }
     }
 }

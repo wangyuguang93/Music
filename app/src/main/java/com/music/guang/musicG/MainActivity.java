@@ -433,11 +433,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
             Log.d("TAG", "The interstitial wasn't loaded yet.");
         }
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Thread.sleep(3000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     };
     private native String BannerId();
     private native String InsertId();

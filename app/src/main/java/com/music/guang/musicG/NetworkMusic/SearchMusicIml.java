@@ -111,6 +111,10 @@ public class SearchMusicIml extends AsyncTask<String,NetworkData,List<NetworkDat
         for (int i=0;i<musicList.size();i++){
             GetImgPic getImgPic=new GetImgPic(context,musicList,i);
             getImgPic.execute();
+            musicList.get(i).setisUrlok(true);
+            Log.d("获取歌曲链接",musicList.get(i).getFilename());
+            GetSongUrl getSongUrl=new GetSongUrl(context,musicList.get(i));
+            getSongUrl.execute();
         }
 
     }

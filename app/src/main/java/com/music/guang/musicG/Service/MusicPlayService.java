@@ -89,15 +89,21 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
     @Override
     public void onPrepared(MediaPlayer mp) {
         mp.start();
-        SendBroadCastReceiver(MainMsg, "isPlay",
-                type==0?musicListData.get(ListNum).getDisName():networListData.get(ListNum).getFilename(),
-                1, mediaPlayer.getDuration());
-        seekBar.setMax(mediaPlayer.getDuration());
-        //设置通知栏
-        tongzhi();
-        //更新播放时间
+        try {
 
-      getMusicCurrentPosition();
+
+            SendBroadCastReceiver(MainMsg, "isPlay",
+                    type == 0 ? musicListData.get(ListNum).getDisName() : networListData.get(ListNum).getFilename(),
+                    1, mediaPlayer.getDuration());
+            seekBar.setMax(mediaPlayer.getDuration());
+            //设置通知栏
+            tongzhi();
+            //更新播放时间
+
+            getMusicCurrentPosition();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     //服务绑定类
@@ -430,6 +436,7 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
                     PauseMUS();
                     break;
                 case "urlok": {
+                    if (networListData.size()>=ListNum){
                     String url320 = (networListData.get(ListNum).getUrl320());
                     String ur128 = (networListData.get(ListNum).getUrl128());
 
@@ -440,6 +447,7 @@ public class MusicPlayService extends Service implements  OnCompletionListener, 
                     } else {
                         Toast.makeText(context,"this song not paly,play next",Toast.LENGTH_SHORT).show();
                         PlayNext(ListNum);
+                        }
                     }
                     break;
                 }

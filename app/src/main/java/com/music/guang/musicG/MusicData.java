@@ -19,6 +19,7 @@ public class MusicData {
         private Bitmap bnendi_pic;
         private boolean isPlayging;
 
+
     public boolean getisPlayging() {
         return isPlayging;
     }

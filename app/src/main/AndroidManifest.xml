@@ -32,6 +32,7 @@
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:name="com.music.guang.musicG.MainActivity"
             android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan"/>
         <activity android:name="com.music.guang.musicG.Check.PermissionActivity"
             android:theme="@style/AppTheme.NoActionBar"/>

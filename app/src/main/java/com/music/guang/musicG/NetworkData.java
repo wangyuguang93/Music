@@ -51,6 +51,19 @@ public class NetworkData {
 
     private String extName;
     private Bitmap pic;
+
+    //是否是下载歌曲链接
+    private boolean isUrlok=false;
+
+
+    public void setisUrlok(boolean urlok) {
+        isUrlok = urlok;
+    }
+
+    public boolean getisUrlok() {
+        return isUrlok;
+    }
+
     public Bitmap getPic() {
         return pic;
     }
