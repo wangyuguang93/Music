@@ -101,12 +101,19 @@ public class SearchMusicIml extends AsyncTask<String,NetworkData,List<NetworkDat
 
     @Override
     protected void onPostExecute(List<NetworkData> networkData) {
-        if (networkData.size()==0){
-            Toast.makeText(context, R.string.no_songs,Toast.LENGTH_SHORT).show();
-        }
         Intent intent = new Intent();
         intent.putExtra("msg", "searchok");
         intent.setAction("networkMsg");
+        if (networkData==null)
+        {
+            Toast.makeText(context, R.string.network_fail,Toast.LENGTH_SHORT).show();
+            context.sendBroadcast(intent);
+            return;
+        }
+        if (networkData.size()==0){
+            Toast.makeText(context, R.string.no_songs,Toast.LENGTH_SHORT).show();
+        }
+
         context.sendBroadcast(intent);
         for (int i=0;i<musicList.size();i++){
             GetImgPic getImgPic=new GetImgPic(context,musicList,i);

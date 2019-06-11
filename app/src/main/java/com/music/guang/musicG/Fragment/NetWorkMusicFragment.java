@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +16,8 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.fragment.app.Fragment;
 
 import com.music.guang.musicG.Adapter.NetWorkMusicApapter;
 import com.music.guang.musicG.NetworkData;
@@ -31,7 +33,7 @@ import java.util.List;
  * Created by guang on 2017/8/18.
  */
 
-public  class NetWorkMusicFragment extends android.support.v4.app.Fragment{
+public  class NetWorkMusicFragment extends Fragment {
     public static final String ARG_PAGE = "ARG_PAGE";
     private int mPage;
     private Context context;
